@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en-CA" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reserve | Aeris Gallery</title>
+<meta name="description" content="Reserve the Aeris Gallery Mirrored Booth or Glam Booth for your Winnipeg wedding, brand activation or private event.">
+<meta property="og:title" content="Reserve | Aeris Gallery">
+<meta property="og:description" content="Reserve the Aeris Gallery Mirrored Booth or Glam Booth for your Winnipeg wedding, brand activation or private event.">
+<meta property="og:image" content="assets/img/mirror-summer-sm.jpg">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#23242a">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;1,6..96,400&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Jost:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="nav">
+  <div class="wrap nav__inner">
+    <ul class="nav__links">
+      <li><a href="mirrored-booth.html">Mirrored Booth</a></li>
+      <li><a href="glam-booth.html">Glam Booth</a></li>
+    </ul>
+    <a class="wordmark" href="index.html" aria-label="Aeris Gallery, home">
+      <span class="wordmark__name">AERIS</span>
+      <span class="wordmark__sub">GALLERY</span>
+    </a>
+    <ul class="nav__links nav__links--right">
+      <li><a href="faq.html">Questions</a></li>
+      <li><a href="book.html" aria-current="page">Reserve</a></li>
+    </ul>
+    <button class="nav__toggle" type="button" aria-controls="menu" aria-expanded="false" data-menu-open>Menu</button>
+  </div>
+</header>
+<div class="menu" id="menu" aria-hidden="true" role="dialog" aria-label="Site menu">
+  <div class="menu__top">
+    <a class="wordmark" href="index.html" style="text-align:left"><span class="wordmark__name">AERIS</span></a>
+    <button class="nav__toggle" style="display:inline-flex" type="button" data-menu-close>Close</button>
+  </div>
+  <ul class="menu__list">
+    <li><a href="index.html">The <em>Cover</em></a></li>
+    <li><a href="mirrored-booth.html">Mirrored <em>Booth</em></a></li>
+    <li><a href="glam-booth.html">Glam <em>Booth</em></a></li>
+    <li><a href="faq.html">Questions</a></li>
+    <li><a href="book.html"><em>Reserve</em></a></li>
+  </ul>
+  <div class="menu__foot">
+    <a href="mailto:aerisgallery@outlook.com">aerisgallery@outlook.com</a><br>
+    <a href="tel:+12049906530">(204) 990-6530</a>
+  </div>
+</div>
+
+<main id="main" class="book">
+  <aside class="book__aside">
+    <div>
+      <p class="kicker">Reservations</p>
+      <h1 class="display">Our booth.<br><em>Your vision.</em></h1>
+      <p class="standfirst" style="max-width:24ch">Tell us about the night. We will reply with availability and a quote.</p>
+    </div>
+    <dl>
+      <div><dt>Book ahead</dt><dd>Four to six weeks for weddings and peak season. Short notice? Ask anyway.</dd></div>
+      <div><dt>Email</dt><dd><a href="mailto:aerisgallery@outlook.com">aerisgallery@outlook.com</a></dd></div>
+      <div><dt>Telephone</dt><dd><a href="tel:+12049906530">(204) 990-6530</a></dd></div>
+      <div><dt>Studio</dt><dd>Winnipeg, Manitoba</dd></div>
+    </dl>
+  </aside>
+
+  <div class="book__main">
+    <form id="booking" class="form" novalidate>
+      <fieldset>
+        <legend>The booth</legend>
+        <div class="field field--full">
+          <span class="kicker" style="margin-bottom:12px;font-size:0.64rem;letter-spacing:0.24em" id="booth-label">Which booth?</span>
+          <div class="choice" role="radiogroup" aria-labelledby="booth-label">
+            <input type="radio" id="b-mirrored" name="booth" value="mirrored" required><label for="b-mirrored">Mirrored Booth</label>
+            <input type="radio" id="b-glam" name="booth" value="glam"><label for="b-glam">Glam Booth</label>
+            <input type="radio" id="b-both" name="booth" value="both"><label for="b-both">Both</label>
+          </div>
+          <span class="error" aria-live="polite"></span>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>You</legend>
+        <div class="field">
+          <label for="first_name">First name</label>
+          <input id="first_name" name="first_name" type="text" autocomplete="given-name" maxlength="80" required>
+          <span class="error" aria-live="polite"></span>
+        </div>
+        <div class="field">
+          <label for="last_name">Last name</label>
+          <input id="last_name" name="last_name" type="text" autocomplete="family-name" maxlength="80" required>
+          <span class="error" aria-live="polite"></span>
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" autocomplete="email" maxlength="120" required>
+          <span class="error" aria-live="polite"></span>
+        </div>
+        <div class="field">
+          <label for="phone">Phone</label>
+          <input id="phone" name="phone" type="tel" autocomplete="tel" maxlength="30" pattern="[\d\s\+\(\)\.\-]{7,30}" required>
+          <span class="error" aria-live="polite"></span>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>The event</legend>
+        <div class="field">
+          <label for="date">Date</label>
+          <input id="date" name="date" type="date" required>
+          <span class="error" aria-live="polite"></span>
+        </div>
+        <div class="field">
+          <label for="time">Start time</label>
+          <input id="time" name="time" type="time" step="1800" required>
+          <span class="error" aria-live="polite"></span>
+        </div>
+        <div class="field field--full">
+          <label for="address">Venue address</label>
+          <input id="address" name="address" type="text" autocomplete="street-address" maxlength="200" required>
+          <span class="error" aria-live="polite"></span>
+        </div>
+        <div class="field">
+          <label for="duration">Duration</label>
+          <select id="duration" name="duration" required>
+            <option value="" disabled selected>Choose</option>
+            <option>2 hours</option><option>3 hours</option><option>4 hours</option>
+            <option>5 hours</option><option>6 hours</option><option>All day</option>
+          </select>
+          <span class="error" aria-live="polite"></span>
+        </div>
+        <div class="field">
+          <label for="budget">Budget</label>
+          <select id="budget" name="budget" required>
+            <option value="" disabled selected>Choose</option>
+            <option>$500 to $1,000</option><option>$1,000 to $1,500</option><option>$1,500 to $2,000</option><option>$2,000 and above</option>
+          </select>
+          <span class="error" aria-live="polite"></span>
+        </div>
+        <div class="field">
+          <label for="printer">Prints</label>
+          <select id="printer" name="printer" required>
+            <option value="" disabled selected>Choose</option>
+            <option>Digital only</option><option>150 prints</option><option>300 prints</option>
+          </select>
+          <span class="error" aria-live="polite"></span>
+        </div>
+        <div class="field">
+          <label for="led">LED sign</label>
+          <select id="led" name="led" required>
+            <option value="" disabled selected>Choose</option>
+            <option>No sign</option><option>Preset sign</option><option>Custom sign</option>
+          </select>
+          <span class="error" aria-live="polite"></span>
+        </div>
+        <div class="field field--full">
+          <label for="message">About the night <span class="opt">(optional)</span></label>
+          <textarea id="message" name="message" maxlength="3000" placeholder="The occasion, your colours, the guest list, the feeling you want. Anything we should know."></textarea>
+          <span class="error" aria-live="polite"></span>
+        </div>
+        <div class="field">
+          <label for="source">How did you find us? <span class="opt">(optional)</span></label>
+          <select id="source" name="source">
+            <option value="" selected>Choose</option>
+            <option>Instagram</option><option>TikTok</option><option>Facebook</option><option>A friend</option><option>At an event</option><option>Other</option>
+          </select>
+          <span class="error" aria-live="polite"></span>
+        </div>
+      </fieldset>
+
+      <p class="status" role="status" aria-live="polite"></p>
+      <div class="form__submit">
+        <button class="btn" type="submit">Request my date</button>
+        <p class="form__note">No payment now. We confirm availability first.</p>
+      </div>
+    </form>
+  </div>
+</main>
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer__letter">
+      <div>
+        <p class="kicker" style="margin-bottom:1rem">The Gallery Letter</p>
+        <h2 class="display">News, open dates <em>&amp; private perks.</em></h2>
+        <p>Occasional letters from the studio. Never more than once a month.</p>
+      </div>
+      <form class="signup" novalidate>
+        <label for="signup-email" class="skip">Email address</label>
+        <input id="signup-email" name="email" type="email" autocomplete="email" placeholder="Your email address" required>
+        <button type="submit">Subscribe</button>
+        <p class="signup__status" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+    <div class="footer__cols">
+      <p class="footer__mark">AERIS<small>GALLERY · WINNIPEG</small></p>
+      <div>
+        <h3>The booths</h3>
+        <ul>
+          <li><a href="mirrored-booth.html">Mirrored Booth</a></li>
+          <li><a href="glam-booth.html">Glam Booth</a></li>
+          <li><a href="faq.html">Questions</a></li>
+          <li><a href="book.html">Reserve a date</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Contact</h3>
+        <ul>
+          <li><a href="mailto:aerisgallery@outlook.com">Email us</a></li>
+          <li><a href="tel:+12049906530">(204) 990-6530</a></li>
+          <li>Winnipeg, Manitoba</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Follow</h3>
+        <ul>
+          <li><a href="https://www.instagram.com/aerisgallery" rel="noopener" target="_blank">Instagram</a></li>
+          <li><a href="https://www.tiktok.com/@aeris.gallery" rel="noopener" target="_blank">TikTok</a></li>
+          <li><a href="https://www.facebook.com/profile.php?id=61573725666547" rel="noopener" target="_blank">Facebook</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer__base">
+      <span>© <span data-year>2026</span> Aeris Gallery</span>
+      <a href="privacy.html">Privacy</a>
+    </div>
+  </div>
+</footer>
+<script>document.querySelectorAll("[data-year]").forEach(e=>e.textContent=new Date().getFullYear())</script>
+<script src="assets/js/main.js" defer></script>
+</body>
+</html>
