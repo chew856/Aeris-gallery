@@ -1,228 +1,243 @@
 /*
   Aeris Gallery site script.
 
-  FORM DELIVERY
-  Set FORM_ENDPOINT to a form service URL (for example a Formspree endpoint
-  like "https://formspree.io/f/xxxxxxx") to receive bookings and newsletter
-  sign-ups by email without the visitor's mail app.
-  While it is empty, submitting opens the visitor's email app with a
-  pre-written message to BUSINESS_EMAIL instead.
+  RECEIVING BOOKINGS
+  Set FORM_ENDPOINT to a form service URL (for example a free Formspree form,
+  "https://formspree.io/f/xxxxxxx"). Every enquiry, including the short
+  "Is your date open?" form, is then emailed straight to you.
+  While it is empty, the final step opens the visitor's own email app with
+  the request written out and addressed to BUSINESS_EMAIL. That works, but
+  some visitors will not press send, so connect a form service before launch.
 */
 const FORM_ENDPOINT = "";
 const BUSINESS_EMAIL = "aerisgallery@outlook.com";
+const DRAFT_KEY = "aeris-booking-draft";
 
 document.documentElement.classList.remove("no-js");
 
+/* Analytics hook: pushes events to Google Tag Manager / GA4 if installed. */
+const track = (event, data = {}) => {
+  try { (window.dataLayer = window.dataLayer || []).push({ event, ...data }); } catch (e) {}
+};
+
+const today = () => {
+  const d = new Date();
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0, 10);
+};
+document.querySelectorAll('input[type="date"]').forEach((el) => { el.min = today(); });
+
 /* ---------- Navigation ---------- */
 (() => {
-  const nav = document.querySelector(".nav");
-  if (nav && nav.classList.contains("nav--over")) {
-    const onScroll = () => nav.classList.toggle("is-solid", window.scrollY > window.innerHeight * 0.6);
+  const nav = document.querySelector(".nav--over");
+  if (nav) {
+    const onScroll = () => nav.classList.toggle("is-solid", window.scrollY > 40);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
   }
-
   const menu = document.getElementById("menu");
-  const openBtn = document.querySelector("[data-menu-open]");
-  const closeBtn = document.querySelector("[data-menu-close]");
-  if (!menu || !openBtn || !closeBtn) return;
-
-  const setOpen = (open) => {
-    menu.classList.toggle("is-open", open);
-    menu.setAttribute("aria-hidden", String(!open));
-    openBtn.setAttribute("aria-expanded", String(open));
-    document.body.classList.toggle("menu-open", open);
-    if (open) closeBtn.focus();
-    else openBtn.focus();
+  const open = document.querySelector("[data-menu-open]");
+  const close = document.querySelector("[data-menu-close]");
+  if (!menu || !open || !close) return;
+  const set = (on) => {
+    menu.classList.toggle("is-open", on);
+    menu.setAttribute("aria-hidden", String(!on));
+    open.setAttribute("aria-expanded", String(on));
+    document.body.classList.toggle("menu-open", on);
+    (on ? close : open).focus();
   };
-  openBtn.addEventListener("click", () => setOpen(true));
-  closeBtn.addEventListener("click", () => setOpen(false));
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && menu.classList.contains("is-open")) setOpen(false);
-  });
-  menu.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => setOpen(false)));
+  open.addEventListener("click", () => set(true));
+  close.addEventListener("click", () => set(false));
+  menu.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => set(false)));
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && menu.classList.contains("is-open")) set(false); });
 })();
 
 /* ---------- Reveal on scroll ---------- */
 (() => {
-  const items = document.querySelectorAll(".reveal");
-  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (reduce || !("IntersectionObserver" in window)) {
-    items.forEach((el) => el.classList.add("is-in"));
+  const els = document.querySelectorAll(".reveal");
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) {
+    els.forEach((el) => el.classList.add("is-in"));
     return;
   }
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add("is-in");
-        io.unobserve(entry.target);
-      }
-    });
-  }, { rootMargin: "0px 0px -10% 0px" });
-  items.forEach((el) => io.observe(el));
+  const io = new IntersectionObserver((entries) => entries.forEach((en) => {
+    if (en.isIntersecting) { en.target.classList.add("is-in"); io.unobserve(en.target); }
+  }), { rootMargin: "0px 0px -8% 0px" });
+  els.forEach((el) => io.observe(el));
 })();
 
-/* ---------- Helpers ---------- */
-const send = async (form, subject, lines) => {
-  if (FORM_ENDPOINT) {
-    const data = new FormData(form);
-    data.append("_subject", subject);
-    const res = await fetch(FORM_ENDPOINT, { method: "POST", body: data, headers: { Accept: "application/json" } });
-    if (!res.ok) throw new Error("Request failed");
-    return "sent";
-  }
-  const href = `mailto:${BUSINESS_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines.join("\n"))}`;
-  window.location.href = href;
-  return "mailto";
+/* ---------- Track call and CTA clicks ---------- */
+document.addEventListener("click", (e) => {
+  const a = e.target.closest("a");
+  if (!a) return;
+  if (a.href.startsWith("tel:")) track("click_call");
+  else if (a.href.startsWith("mailto:")) track("click_email");
+  else if (a.pathname && a.pathname.endsWith("book.html")) track("click_check_date", { from: location.pathname });
+});
+
+const post = async (data) => {
+  const res = await fetch(FORM_ENDPOINT, { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(data) });
+  if (!res.ok) throw new Error("send failed");
 };
 
-/* ---------- Booking form ---------- */
+const isEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+
+/* ---------- Quick "Is your date open?" form ---------- */
+document.querySelectorAll("form.qf").forEach((form) => {
+  const err = form.querySelector(".err");
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const date = form.elements.date.value;
+    const booth = form.elements.booth.value;
+    const email = form.elements.email.value.trim();
+    if (!date || !isEmail(email)) {
+      err.textContent = !date ? "Choose your event date" : "Enter a valid email";
+      (!date ? form.elements.date : form.elements.email).focus();
+      return;
+    }
+    err.textContent = "";
+    track("quick_check_submit", { booth });
+    const btn = form.querySelector("button");
+    btn.disabled = true;
+    // Capture the lead first, so it is not lost if they leave the next page.
+    if (FORM_ENDPOINT) {
+      try { await post({ _subject: `Date check: ${date}`, type: "Quick date check", date, booth, email }); } catch (e2) {}
+    }
+    const q = new URLSearchParams({ date, booth, email });
+    location.href = `book.html?${q}`;
+  });
+});
+
+/* ---------- Booking form (two steps) ---------- */
 (() => {
   const form = document.getElementById("booking");
   if (!form) return;
-
-  // No past dates
-  const date = form.querySelector("#date");
-  if (date) {
-    const d = new Date();
-    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-    date.min = d.toISOString().slice(0, 10);
-  }
-
-  // Preselect booth from ?booth=mirrored|glam
-  const booth = new URLSearchParams(location.search).get("booth");
-  if (booth) {
-    const radio = form.querySelector(`input[name="booth"][value="${booth}"]`);
-    if (radio) radio.checked = true;
-  }
-
-  const messages = {
-    valueMissing: "Required",
-    typeMismatch: "Please check this",
-    patternMismatch: "Please check this",
-    rangeUnderflow: "Please choose a future date",
-  };
-
-  const fieldOf = (el) => el.closest(".field");
-  const showError = (el) => {
-    const field = fieldOf(el);
-    if (!field) return;
-    const out = field.querySelector(".error");
-    const v = el.validity;
-    let msg = "";
-    if (!v.valid) {
-      for (const key of Object.keys(messages)) if (v[key]) { msg = messages[key]; break; }
-      if (!msg) msg = "Please check this";
-    }
-    field.classList.toggle("is-invalid", !!msg);
-    if (out) out.textContent = msg;
-  };
-
-  form.querySelectorAll("input, select, textarea").forEach((el) => {
-    el.addEventListener("blur", () => { if (el.value || el.type === "radio") showError(el); });
-    el.addEventListener("input", () => { if (fieldOf(el)?.classList.contains("is-invalid")) showError(el); });
-    el.addEventListener("change", () => showError(el));
-  });
-
+  const steps = [...form.querySelectorAll(".step")];
+  const bar = [...document.querySelectorAll(".progress li")];
   const status = form.querySelector(".status");
-  const button = form.querySelector("button[type=submit]");
+  let current = 0;
   let busy = false;
+
+  // Prefill: saved draft first, then anything passed in the URL.
+  const fill = (obj) => Object.entries(obj).forEach(([k, v]) => {
+    const els = form.querySelectorAll(`[name="${k}"]`);
+    els.forEach((el) => {
+      if (el.type === "radio" || el.type === "checkbox") el.checked = Array.isArray(v) ? v.includes(el.value) : el.value === v;
+      else if (v) el.value = v;
+    });
+  });
+  try { const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null"); if (d) fill(d); } catch (e) {}
+  const params = Object.fromEntries(new URLSearchParams(location.search));
+  if (params.booth === "unsure") params.booth = "help";
+  fill(params);
+
+  const collect = () => {
+    const out = {};
+    new FormData(form).forEach((v, k) => {
+      if (out[k] !== undefined) out[k] = [].concat(out[k], v);
+      else out[k] = typeof v === "string" ? v.trim() : v;
+    });
+    return out;
+  };
+  const save = () => { try { localStorage.setItem(DRAFT_KEY, JSON.stringify(collect())); } catch (e) {} };
+  form.addEventListener("input", save);
+  form.addEventListener("change", save);
+
+  const msg = (el) => {
+    const v = el.validity;
+    if (v.valid) return "";
+    if (v.valueMissing) return el.type === "radio" ? "Choose one" : "Required";
+    if (v.typeMismatch && el.type === "email") return "Enter a valid email";
+    if (v.rangeUnderflow) return "Choose a future date";
+    if (v.patternMismatch) return "Check this number";
+    return "Check this";
+  };
+  const check = (el) => {
+    const field = el.closest(".field");
+    if (!field) return el.validity.valid;
+    const m = msg(el);
+    field.classList.toggle("is-invalid", !!m);
+    const out = field.querySelector(".err");
+    if (out) out.textContent = m;
+    return !m;
+  };
+  form.addEventListener("change", (e) => { if (e.target.closest(".field.is-invalid")) check(e.target); });
+  form.addEventListener("input", (e) => { if (e.target.closest(".field.is-invalid")) check(e.target); });
+
+  const validStep = (i) => {
+    let first = null;
+    steps[i].querySelectorAll("input, select, textarea").forEach((el) => {
+      if (el.type !== "radio" && el.type !== "checkbox" && typeof el.value === "string") el.value = el.value.trim();
+      if (!check(el) && !first) first = el;
+    });
+    if (first) { first.focus(); return false; }
+    return true;
+  };
+
+  const show = (i) => {
+    current = i;
+    steps.forEach((s, n) => { s.hidden = n !== i; });
+    bar.forEach((b, n) => b.classList.toggle("is-on", n <= i));
+    status.textContent = "";
+    status.className = "status";
+    const head = document.getElementById("form-top");
+    if (head && head.getBoundingClientRect().top < 0) head.scrollIntoView({ behavior: "smooth" });
+  };
+
+  form.querySelector("[data-next]").addEventListener("click", () => {
+    if (!validStep(0)) return;
+    track("booking_step_1_complete");
+    show(1);
+    const firstInput = steps[1].querySelector("input");
+    if (firstInput) firstInput.focus({ preventScroll: true });
+  });
+  form.querySelector("[data-back]").addEventListener("click", () => show(0));
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (busy) return;
+    if (current === 0) { form.querySelector("[data-next]").click(); return; }
+    if (!validStep(1)) { status.className = "status is-error"; status.textContent = "A couple of details are missing. They are marked above."; return; }
 
-    // trim whitespace-only entries so they count as empty
-    form.querySelectorAll("input[type=text], input[type=email], input[type=tel], textarea").forEach((el) => { el.value = el.value.trim(); });
-
-    let first = null;
-    form.querySelectorAll("input, select, textarea").forEach((el) => {
-      showError(el);
-      if (!el.validity.valid && !first) first = el;
-    });
-    if (first) {
-      status.className = "status status--error";
-      status.textContent = "A few details are missing. They are marked above.";
-      first.focus();
-      return;
-    }
-
-    const get = (n) => (form.elements[n] && form.elements[n].value) || "";
-    const boothName = { mirrored: "The Mirrored Booth", glam: "The Glam Booth", both: "Both booths" }[get("booth")] || "";
-    const lines = [
-      `Name: ${get("first_name")} ${get("last_name")}`,
-      `Email: ${get("email")}`,
-      `Phone: ${get("phone")}`,
-      "",
-      `Booth: ${boothName}`,
-      `Date: ${get("date")}`,
-      `Start time: ${get("time")}`,
-      `Duration: ${get("duration")}`,
-      `Venue address: ${get("address")}`,
-      `Budget: ${get("budget")}`,
-      `Prints: ${get("printer")}`,
-      `LED sign: ${get("led")}`,
-      `Heard about us: ${get("source") || "Not given"}`,
-      "",
-      "About the event:",
-      get("message") || "(none)",
+    const d = collect();
+    const boothName = { mirrored: "The Mirrored Booth", glam: "The Glam Booth", both: "Both booths", help: "Not sure yet" }[d.booth] || d.booth;
+    const extras = [].concat(d.extras || []).join(", ") || "None";
+    const summary = [
+      `Name: ${d.name}`, `Email: ${d.email}`, `Phone: ${d.phone}`, "",
+      `Booth: ${boothName}`, `Date: ${d.date}`, `Start time: ${d.time || "Not set"}`, `Hours: ${d.hours}`,
+      `Venue / city: ${d.venue}`, `Guests: ${d.guests || "Not given"}`, `Event type: ${d.event_type || "Not given"}`,
+      `Extras: ${extras}`, `Budget: ${d.budget || "Not given"}`, `Found us: ${d.source || "Not given"}`, "",
+      "Notes:", d.message || "(none)",
     ];
 
     busy = true;
-    button.disabled = true;
+    const btn = form.querySelector('button[type="submit"]');
+    btn.disabled = true;
     status.className = "status";
     status.textContent = "Sending your request…";
 
     try {
-      const how = await send(form, `Booking request: ${boothName}, ${get("date")}`, lines);
-      if (how === "sent") {
-        form.innerHTML = `
-          <div class="sent" role="status" tabindex="-1">
-            <p class="kicker">Request received</p>
-            <h2 class="display">Thank you, ${get("first_name").replace(/[<>&"]/g, "")}.</h2>
-            <p>Your date is noted. We will be in touch at the email you gave us with availability and a quote.</p>
-          </div>`;
-        form.querySelector(".sent").focus();
+      if (FORM_ENDPOINT) {
+        await post({ _subject: `Booking request: ${boothName}, ${d.date}`, _replyto: d.email, ...d, booth: boothName, extras });
       } else {
-        status.textContent = `Your email app should now open with your request ready to send. If it did not, write to us at ${BUSINESS_EMAIL}.`;
+        location.href = `mailto:${BUSINESS_EMAIL}?subject=${encodeURIComponent(`Booking request: ${boothName}, ${d.date}`)}&body=${encodeURIComponent(summary.join("\n"))}`;
       }
+      track("booking_submit", { booth: d.booth });
+      try { localStorage.removeItem(DRAFT_KEY); } catch (e2) {}
+      const done = document.getElementById("done");
+      form.hidden = true;
+      document.querySelector(".progress").hidden = true;
+      done.querySelector("[data-name]").textContent = d.name.split(" ")[0];
+      if (!FORM_ENDPOINT) done.querySelector("[data-mailto-note]").hidden = false;
+      done.hidden = false;
+      done.focus();
     } catch (err) {
-      status.className = "status status--error";
-      status.textContent = `We could not send that just now. Please try again, or email ${BUSINESS_EMAIL}.`;
+      status.className = "status is-error";
+      status.textContent = `That did not send. Please try again, or call or email us and we will take it from there.`;
     } finally {
       busy = false;
-      if (document.body.contains(button)) button.disabled = false;
+      btn.disabled = false;
     }
   });
-})();
 
-/* ---------- Newsletter ---------- */
-(() => {
-  document.querySelectorAll("form.signup").forEach((form) => {
-    const out = form.querySelector(".signup__status");
-    const input = form.querySelector("input[type=email]");
-    let busy = false;
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      if (busy) return;
-      input.value = input.value.trim();
-      if (!input.checkValidity()) {
-        out.textContent = input.value ? "That email address does not look right." : "Please enter your email address.";
-        input.focus();
-        return;
-      }
-      busy = true;
-      try {
-        const how = await send(form, "Subscribe me to The Gallery Letter", [`Please add ${input.value} to The Gallery Letter.`]);
-        out.textContent = how === "sent"
-          ? "You are on the list. The next letter will find you."
-          : "Your email app should open with your sign-up ready to send.";
-        if (how === "sent") form.reset();
-      } catch (err) {
-        out.textContent = "That did not go through. Please try again.";
-      } finally {
-        busy = false;
-      }
-    });
-  });
+  show(0);
 })();
