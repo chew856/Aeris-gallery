@@ -70,9 +70,10 @@ h2 { font-size: clamp(2.2rem, 4.4vw, 3.6rem); }
 .nav--over { background: transparent; color: var(--paper); border-bottom-color: transparent; }
 .nav--over.is-solid { background: var(--paper); color: var(--ink); border-bottom-color: var(--rule); }
 .nav .wrap { display: flex; align-items: center; justify-content: space-between; height: var(--nav-h); gap: 2rem; }
-.logo { text-decoration: none; line-height: 1; }
-.logo b { display: block; font-family: var(--display); font-weight: 400; font-size: 1.7rem; letter-spacing: 0.06em; }
-.logo span { display: block; font-family: var(--caps); font-size: 0.52rem; letter-spacing: 0.55em; margin-top: 3px; }
+.logo { display: inline-flex; flex-direction: column; align-items: center; text-decoration: none; line-height: 1; }
+/* letter-spacing adds space after the last letter; the negative margin cancels it so both lines centre */
+.logo b { display: block; font-family: var(--display); font-weight: 400; font-size: 1.7rem; letter-spacing: 0.06em; margin-right: -0.06em; }
+.logo span { display: block; font-family: var(--caps); font-size: 0.52rem; letter-spacing: 0.55em; margin-right: -0.55em; margin-top: 4px; }
 .nav ul { display: flex; gap: 2.2rem; list-style: none; margin: 0; padding: 0; }
 .nav ul a { font-family: var(--caps); font-size: 0.68rem; letter-spacing: 0.22em; text-transform: uppercase; text-decoration: none; padding: 8px 0; border-bottom: 1px solid transparent; }
 .nav ul a:hover, .nav ul a[aria-current="page"] { border-bottom-color: currentColor; }
